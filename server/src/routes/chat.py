@@ -2,6 +2,7 @@ import os
 from fastapi import APIRouter, FastAPI, WebSocket, Request, BackgroundTasks, HTTPException
 import uuid
 from ..socket.connection import ConnectionManager
+from ..socket.utils import get_token
 
 manager = ConnectionManager()
 
