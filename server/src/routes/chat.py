@@ -14,13 +14,27 @@ redis = Redis()
 
 @chat.post("/token")
 async def token_generator(name: str, request: Request):
+    token = str(uuid.uuid4())
+
     if name == "":
         raise HTTPException(status_code = 400, detail={
             "loc": "name", "msg": "Enter a valid name"
         })
-    token = str(uuid.uuid4())
-    data = {"name": name, "token": token}
-    return data
+    
+    json_client = redis.create_rejson_connection()
+
+    chat_session = Chat(
+        token = token,
+        messages = [],
+        name=name
+    )
+
+    json_client.jsonset(str(token), Path.rootPath(), chat_session.dict())
+
+    redis_client = await redis.create_connection()
+    await redis_client.expire(str(token), 3600)
+
+    return chat_session.dict()
 
 @chat.post("/refresh_token")
 async def refresh_token(request: Request):
